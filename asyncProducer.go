@@ -17,3 +17,7 @@ func InitManualRetryAsyncProducer(addr []string, conf *Config) (*AsyncProducer, 
 func InitManualRetryAsyncProducerGroup(addr []string, conf *Config, groupId string) ([]*AsyncProducer, error) {
 
 }
+
+func ()  {
+	
+}
