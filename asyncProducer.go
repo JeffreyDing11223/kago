@@ -18,8 +18,8 @@ func InitManualRetryAsyncProducer(addr []string, conf *Config) (*AsyncProducer, 
 		ProducerGroupId: "",
 	}
 	var err error
-	aSyncProducer.producer,err=sarama.NewAsyncProducer(addr,&conf.Config.Config)
-	if err!=nil{
+	aSyncProducer.producer, err = sarama.NewAsyncProducer(addr, &conf.Config.Config)
+	if err != nil {
 		log.Print(err)
 		return nil, err
 	}
@@ -49,19 +49,19 @@ func InitManualRetryAsyncProducerGroup(addr []string, conf *Config, groupId stri
 	return producerSli, nil
 }
 
-func (asp *AsyncProducer) Send() (chan<- *ProducerMessage)  {
-
+func (asp *AsyncProducer) Send() chan<- *ProducerMessage {
+	return asp.producer.Input()
 }
 
-func (asp *AsyncProducer) Successes() (<-chan *ProducerMessage)  {
-
+func (asp *AsyncProducer) Successes() <-chan *ProducerMessage {
+	return asp.producer.Successes()
 }
 
-func (asp *AsyncProducer) Errors() (<-chan *ProducerError) {
-
+func (asp *AsyncProducer) Errors() <-chan *ProducerError {
+	return asp.producer.Errors()
 }
 
 func (asp *AsyncProducer) Close() (err error) {
-
+	err = asp.producer.Close()
+	return
 }
-
