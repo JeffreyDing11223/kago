@@ -43,10 +43,11 @@ func (cs *Consumer) Errors() <-chan error {
 
 }
 
-//issue
+//issue github.com/Shopify/sarama/issues/1130 has been recovered
 func Topics(addr []string, conf *Config) ([]string, error) {
 	client, err := sarama.NewClient(addr, &conf.Config.Config)
 	if err != nil {
+		log.Print("get topics error", err)
 		return []string{}, err
 	}
 	defer client.Close()
@@ -56,6 +57,7 @@ func Topics(addr []string, conf *Config) ([]string, error) {
 func Partitions(addr []string, topic string, conf *Config) ([]int32, error) {
 	client, err := sarama.NewClient(addr, &conf.Config.Config)
 	if err != nil {
+		log.Print("get partitions error", err)
 		return []int32{}, err
 	}
 	defer client.Close()
