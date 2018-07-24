@@ -43,6 +43,14 @@ func (cs *Consumer) Errors() <-chan error {
 
 }
 
+func (cs *Consumer) MarkOffset(*ConsumerMessage) {
+
+}
+
+func (cs *Consumer) ResetOffset(*ConsumerMessage) {
+
+}
+
 //issue github.com/Shopify/sarama/issues/1130 has been recovered
 func Topics(addr []string, conf *Config) ([]string, error) {
 	client, err := sarama.NewClient(addr, &conf.Config.Config)
