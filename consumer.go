@@ -8,17 +8,20 @@ import (
 
 type Consumer struct {
 	consumer sarama_cluster.Consumer
+	Topic    string
 }
 
 type PartitionConsumer struct {
-	consumer sarama.PartitionConsumer
+	consumer  sarama.PartitionConsumer
+	Topic     string
+	Partition int32
 }
 
-func (cs *Consumer) InitOneConsumerOfGroup(addr []string, topic string, groupId string, conf *Config) (*Consumer, error) {
+func InitOneConsumerOfGroup(addr []string, topic string, groupId string, conf *Config) (*Consumer, error) {
 
 }
 
-func (cs *Consumer) InitConsumersOfGroup(addr []string, topic string, groupId string, conf *Config) ([]*Consumer, error) {
+func InitConsumersOfGroup(addr []string, topic string, groupId string, conf *Config) ([]*Consumer, error) {
 
 }
 
@@ -80,7 +83,7 @@ func Partitions(addr []string, topic string, conf *Config) ([]int32, error) {
 }
 
 // don't forget to close sarama.Consumer,then close partitionConsumer
-func (pcs *PartitionConsumer) InitPartitionConsumer(addr []string, topic string, partition int32, groupId string, conf *Config) (*PartitionConsumer, sarama.Consumer, error) {
+func InitPartitionConsumer(addr []string, topic string, partition int32, groupId string, conf *Config) (*PartitionConsumer, sarama.Consumer, error) {
 	client, err := sarama.NewClient(addr, &conf.Config.Config)
 	if err != nil {
 		log.Println("client create error")
@@ -115,7 +118,9 @@ func (pcs *PartitionConsumer) InitPartitionConsumer(addr []string, topic string,
 			return nil, c, err
 		}
 		var pcs = PartitionConsumer{
-			consumer: partitionConsumer,
+			consumer:  partitionConsumer,
+			Topic:     topic,
+			Partition: partition,
 		}
 		return &pcs, c, nil
 
@@ -126,23 +131,25 @@ func (pcs *PartitionConsumer) InitPartitionConsumer(addr []string, topic string,
 			return nil, c, err
 		}
 		var pcs = PartitionConsumer{
-			consumer: partitionConsumer,
+			consumer:  partitionConsumer,
+			Topic:     topic,
+			Partition: partition,
 		}
 		return &pcs, c, nil
 	}
 	return nil, c, nil
 }
 
-func (pcs *PartitionConsumer) InitPartitionConsumers(addr []string, topic string, partition int, groupId string, conf *Config) ([]*PartitionConsumer, error) {
+func InitPartitionConsumers(addr []string, topic string, groupId string, conf *Config) ([]*PartitionConsumer, error) {
 
 }
 
 func (pcs *PartitionConsumer) Recv() <-chan *ConsumerMessage {
-
+	return pcs.consumer.Messages()
 }
 
 func (pcs *PartitionConsumer) Errors() <-chan *ConsumerError {
-
+	return pcs.consumer.Errors()
 }
 
 func (pcs *PartitionConsumer) Close() error {
