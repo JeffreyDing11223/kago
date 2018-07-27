@@ -6,7 +6,9 @@ import (
 )
 
 type PartitionOffsetManager struct {
-	pom sarama.PartitionOffsetManager
+	client sarama.Client
+	om     sarama.OffsetManager
+	pom    sarama.PartitionOffsetManager
 }
 
 func (pom *PartitionOffsetManager) MarkOffset(offset int64, ifExactOnce bool) {
@@ -24,8 +26,11 @@ func (pom *PartitionOffsetManager) NextOffset() (offset int64) {
 	return offset
 }
 
-func (pom *PartitionOffsetManager) Close() {
+func (pom *PartitionOffsetManager) Close() error {
 	pom.pom.AsyncClose()
+	err := pom.om.Close()
+	err = pom.client.Close()
+	return err
 }
 
 func (pom *PartitionOffsetManager) Errors() <-chan *ConsumerError {
@@ -53,7 +58,9 @@ func InitPartitionOffsetManager(addr []string, topic, groupId string, partition 
 		return nil, err
 	}
 	var pom = PartitionOffsetManager{
-		pom: partitionOffsetManager,
+		client: client,
+		om:     offsetManager,
+		pom:    partitionOffsetManager,
 	}
 	return &pom, nil
 }
