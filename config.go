@@ -18,5 +18,6 @@ func NewConfig() (conf *Config) {
 	conf.SyncProducerAmount = 1
 	conf.AsyncProducerAmount = 1
 	conf.ConsumerOfGroupAmount = 1
+	conf.OffsetLocalOrServer = 1
 	return
 }

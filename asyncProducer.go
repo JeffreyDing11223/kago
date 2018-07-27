@@ -32,6 +32,7 @@ func InitManualRetryAsyncProducerGroup(addr []string, conf *Config, groupId stri
 	if producerAmount < 1 {
 		producerAmount = 1
 	}
+	var err2 error
 	var producerSli []*AsyncProducer
 	for i := 0; i < producerAmount; i++ {
 		aSyncProducer := &AsyncProducer{
@@ -41,12 +42,13 @@ func InitManualRetryAsyncProducerGroup(addr []string, conf *Config, groupId stri
 		var err error
 		aSyncProducer.producer, err = sarama.NewAsyncProducer(addr, &conf.Config.Config)
 		if err != nil {
+			err2 = err
 			log.Print(err)
 		} else {
 			producerSli = append(producerSli, aSyncProducer)
 		}
 	}
-	return producerSli, nil
+	return producerSli, err2
 }
 
 func (asp *AsyncProducer) Send() chan<- *ProducerMessage {

@@ -7,7 +7,7 @@ import (
 )
 
 type Consumer struct {
-	consumer sarama_cluster.Consumer
+	consumer *sarama_cluster.Consumer
 	Topic    string
 	GroupId  string
 }
@@ -21,15 +21,45 @@ type PartitionConsumer struct {
 }
 
 func InitOneConsumerOfGroup(addr []string, topic string, groupId string, conf *Config) (*Consumer, error) {
-
+	c, err := sarama_cluster.NewConsumer(addr, groupId, []string{topic}, &conf.Config)
+	var cs = &Consumer{
+		consumer: c,
+		Topic:    topic,
+		GroupId:  groupId,
+	}
+	if err != nil {
+		return nil, err
+	}
+	return cs, nil
 }
 
 func InitConsumersOfGroup(addr []string, topic string, groupId string, conf *Config) ([]*Consumer, error) {
-
+	consumerAmount := conf.ConsumerOfGroupAmount
+	if consumerAmount < 1 {
+		consumerAmount = 1
+	}
+	var consumers []*Consumer
+	var err2 error
+	for i := 0; i < consumerAmount; i++ {
+		c, err := sarama_cluster.NewConsumer(addr, groupId, []string{topic}, &conf.Config)
+		var cs = &Consumer{
+			consumer: c,
+			Topic:    topic,
+			GroupId:  groupId,
+		}
+		if err != nil {
+			err2 = err
+			log.Println(err)
+			continue
+		} else {
+			consumers = append(consumers, cs)
+		}
+	}
+	return consumers, err2
 }
 
 func (cs *Consumer) Close() error {
-	cs.consumer.Close()
+	return cs.consumer.Close()
 }
 
 func (cs *Consumer) Recv() <-chan *ConsumerMessage {
@@ -85,7 +115,6 @@ func Partitions(addr []string, topic string, conf *Config) ([]int32, error) {
 
 }
 
-// don't forget to close sarama.Consumer,then close partitionConsumer
 func InitPartitionConsumer(addr []string, topic string, partition int32, groupId string, conf *Config) (*PartitionConsumer, error) {
 	client, err := sarama.NewClient(addr, &conf.Config.Config)
 	if err != nil {
@@ -149,6 +178,31 @@ func InitPartitionConsumer(addr []string, topic string, partition int32, groupId
 
 func InitPartitionConsumers(addr []string, topic string, groupId string, conf *Config) ([]*PartitionConsumer, error) {
 
+	c, err := sarama.NewConsumer(addr, &conf.Config.Config)
+	if err != nil {
+		log.Println("consumer create error")
+		return nil, err
+	}
+	defer c.Close()
+	var partitionsIds []int32
+	partitionsIds, err = c.Partitions(topic)
+	if err != nil {
+		return nil, err
+	}
+	var result []*PartitionConsumer
+	for _, value := range partitionsIds {
+		partitionConsumer, err := InitPartitionConsumer(addr, topic, value, groupId, conf)
+		if err != nil {
+			log.Println("partitionConsumer create error:", err, "partitionId:", value, " topic:", topic)
+			continue
+		} else {
+			result = append(result, partitionConsumer)
+		}
+	}
+	if len(result) > 0 {
+		return result, nil
+	}
+	return nil, err
 }
 
 func (pcs *PartitionConsumer) Recv() <-chan *ConsumerMessage {

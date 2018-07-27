@@ -26,11 +26,11 @@ func (pom *PartitionOffsetManager) NextOffset() (offset int64) {
 	return offset
 }
 
-func (pom *PartitionOffsetManager) Close() error {
+func (pom *PartitionOffsetManager) Close() (error, error) {
 	pom.pom.AsyncClose()
 	err := pom.om.Close()
-	err = pom.client.Close()
-	return err
+	err2 := pom.client.Close()
+	return err, err2
 }
 
 func (pom *PartitionOffsetManager) Errors() <-chan *ConsumerError {
