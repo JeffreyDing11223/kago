@@ -67,7 +67,3 @@ func (asp *AsyncProducer) Close() (err error) {
 	err = asp.producer.Close()
 	return
 }
-
-func ()  {
-	
-}
