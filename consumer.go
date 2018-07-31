@@ -76,11 +76,17 @@ func (cs *Consumer) Errors() <-chan error {
 
 func (cs *Consumer) MarkOffset(topic string, partition int32, offset int64, groupId string, ifExactOnce bool) {
 	//file
+	if ifExactOnce {
+		fileOffset(topic, partition, offset, groupId)
+	}
 	cs.consumer.MarkPartitionOffset(topic, partition, offset, "")
 }
 
 func (cs *Consumer) ResetOffset(topic string, partition int32, offset int64, groupId string, ifExactOnce bool) {
 	//file
+	if ifExactOnce {
+		fileOffset(topic, partition, offset, groupId)
+	}
 	cs.consumer.ResetPartitionOffset(topic, partition, offset, "")
 }
 
@@ -140,9 +146,17 @@ func InitPartitionConsumer(addr []string, topic string, partition int32, groupId
 			return nil, err
 		}
 		defer partitionOffsetManager.Close()
-		nextOffset, _ := partitionOffsetManager.NextOffset()
+		serverOffset, _ := partitionOffsetManager.NextOffset()
 
 		//file
+		localOffset := getFileOffset(topic, groupId, partition)
+
+		var nextOffset int64
+		if conf.OffsetLocalOrServer == 0 {
+			nextOffset = localOffset
+		} else if conf.OffsetLocalOrServer == 2 {
+			nextOffset = Max(serverOffset, localOffset)
+		}
 
 		partitionConsumer, err := c.ConsumePartition(topic, partition, nextOffset)
 		if err != nil {

@@ -28,3 +28,11 @@ func ListDir(dirPth string, suffix string) (files []string, err error) {
 
 	return files, nil
 }
+
+func Max(a, b int64) int64 {
+	if a > b {
+		return a
+	} else {
+		return b
+	}
+}

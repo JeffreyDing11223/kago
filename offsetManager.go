@@ -14,60 +14,68 @@ type PartitionOffsetManager struct {
 	pom    sarama.PartitionOffsetManager
 }
 
-func (pom *PartitionOffsetManager) MarkOffset(topic string, partition int32, offset int64, groupId string, ifExactOnce bool) {
-	if ifExactOnce {
-		var content []byte
-		offsetFi, exist := getTopicFile(topic)
-		if exist == false {
-			var newOffsetFi *offsetFile
-			fi, err := os.Create("./offsetCfg/" + topic + ".cfg")
-			if err != nil {
-				log.Println("create file error:", err)
-			} else {
-				var result bool
-				newOffsetFi, result = setTopicFile(topic, fi)
-				if result == false {
-					log.Println("set file error")
-					newOffsetFi = new(offsetFile)
-				}
-			}
-			offsetFi = newOffsetFi
-		}
-
-		//file
-		offsetFi.Lock()
-		content, _ = ioutil.ReadAll(offsetFi.file)
-		var cfgEntity cfgObj
-		err := json.Unmarshal(content, cfgEntity)
+func fileOffset(topic string, partition int32, offset int64, groupId string) {
+	var content []byte
+	offsetFi, exist := getTopicFile(topic)
+	if exist == false {
+		var newOffsetFi *offsetFile
+		fi, err := os.Create("./offsetCfg/" + topic + ".cfg")
 		if err != nil {
-			log.Println("cfg json.Unmarshal error", err.Error())
-		}
-		var flag bool
-		for i, value := range cfgEntity.Data {
-			if value.Partition == partition && value.GroupId == groupId {
-				cfgEntity.Data[i].Offset = offset
-				flag = true
+			log.Println("create file error:", err)
+		} else {
+			var result bool
+			newOffsetFi, result = setTopicFile(topic, fi)
+			if result == false {
+				log.Println("set file error")
+				newOffsetFi = new(offsetFile)
 			}
 		}
-		if flag == false {
-			var offsetEntity = offsetObj{
-				GroupId:   groupId,
-				Partition: partition,
-				Offset:    offset,
-			}
-			cfgEntity.Data = append(cfgEntity.Data, offsetEntity)
-		}
-		content, _ = json.Marshal(cfgEntity)
-		_, err = offsetFi.file.Write(content)
-		offsetFi.Unlock()
-		//file
+		offsetFi = newOffsetFi
 	}
 
+	//file
+	offsetFi.Lock()
+	content, _ = ioutil.ReadAll(offsetFi.file)
+	var cfgEntity cfgObj
+	err := json.Unmarshal(content, cfgEntity)
+	if err != nil {
+		log.Println("cfg json.Unmarshal error", err.Error())
+	}
+	var flag bool
+	for i, value := range cfgEntity.Data {
+		if value.Partition == partition && value.GroupId == groupId {
+			cfgEntity.Data[i].Offset = offset
+			flag = true
+		}
+	}
+	if flag == false {
+		var offsetEntity = offsetObj{
+			GroupId:   groupId,
+			Partition: partition,
+			Offset:    offset,
+		}
+		cfgEntity.Data = append(cfgEntity.Data, offsetEntity)
+	}
+	content, _ = json.Marshal(cfgEntity)
+	_, err = offsetFi.file.Write(content)
+	offsetFi.Unlock()
+	if err != nil {
+		log.Println("write file error:", err, " topic:", topic)
+	}
+	//file
+}
+
+func (pom *PartitionOffsetManager) MarkOffset(topic string, partition int32, offset int64, groupId string, ifExactOnce bool) {
+	if ifExactOnce {
+		fileOffset(topic, partition, offset, groupId)
+	}
 	pom.pom.MarkOffset(offset, "")
 }
 
 func (pom *PartitionOffsetManager) ResetOffset(topic string, partition int32, offset int64, groupId string, ifExactOnce bool) {
-	//file
+	if ifExactOnce {
+		fileOffset(topic, partition, offset, groupId)
+	}
 	pom.pom.ResetOffset(offset, "")
 }
 
