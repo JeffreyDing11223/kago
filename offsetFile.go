@@ -32,7 +32,7 @@ func InitOffsetFile() {
 		return
 	}
 	for _, cfg := range cfgs {
-		fi, err := os.Open(cfg)
+		fi, err := os.Open("./offsetCfg" + cfg)
 		if err != nil {
 			log.Println("read "+cfg+" error:", err)
 			continue
