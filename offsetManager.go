@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
 
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -36,17 +37,10 @@ func fileOffset(topic string, partition int32, offset int64, groupId string) {
 	//file
 	offsetFi.Lock()
 
-	stat, err := offsetFi.file.Stat()
-	if err != nil {
-		log.Println(err)
-	}
-	size := stat.Size()
-
-	content := make([]byte, size)
-	offsetFi.file.Read(content)
-	//content, _ = ioutil.ReadAll(offsetFi.file)
+	offsetFi.file.Seek(0, 0)
+	content, _ := ioutil.ReadAll(offsetFi.file)
 	var cfgEntity cfgObj
-	err = json.Unmarshal(content, cfgEntity)
+	err := json.Unmarshal(content, cfgEntity)
 	if err != nil {
 		log.Println("cfg json.Unmarshal error", err.Error())
 	}
