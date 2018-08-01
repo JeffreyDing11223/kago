@@ -3,7 +3,7 @@ package kago
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"io/ioutil"
+
 	"log"
 	"os"
 )
@@ -15,7 +15,7 @@ type PartitionOffsetManager struct {
 }
 
 func fileOffset(topic string, partition int32, offset int64, groupId string) {
-	var content []byte
+
 	offsetFi, exist := getTopicFile(topic)
 	if exist == false {
 		var newOffsetFi *offsetFile
@@ -35,10 +35,18 @@ func fileOffset(topic string, partition int32, offset int64, groupId string) {
 
 	//file
 	offsetFi.Lock()
-	offsetFi.file.Seek(0, 0)
-	content, _ = ioutil.ReadAll(offsetFi.file)
+
+	stat, err := offsetFi.file.Stat()
+	if err != nil {
+		log.Println(err)
+	}
+	size := stat.Size()
+
+	content := make([]byte, size)
+	offsetFi.file.Read(content)
+	//content, _ = ioutil.ReadAll(offsetFi.file)
 	var cfgEntity cfgObj
-	err := json.Unmarshal(content, cfgEntity)
+	err = json.Unmarshal(content, cfgEntity)
 	if err != nil {
 		log.Println("cfg json.Unmarshal error", err.Error())
 	}
