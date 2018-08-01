@@ -40,7 +40,7 @@ func fileOffset(topic string, partition int32, offset int64, groupId string) {
 	if err != nil {
 		log.Println(err)
 	}
-	size := stat.Size()
+	size := stat.Size() - 1
 
 	content := make([]byte, size)
 	offsetFi.file.Read(content)
@@ -65,9 +65,9 @@ func fileOffset(topic string, partition int32, offset int64, groupId string) {
 		}
 		cfgEntity.Data = append(cfgEntity.Data, offsetEntity)
 	}
-	content, _ = json.Marshal(cfgEntity)
+	content2, _ := json.Marshal(cfgEntity)
 	err = offsetFi.file.Truncate(0)
-	_, err = offsetFi.file.Write(content)
+	_, err = offsetFi.file.Write(content2)
 	offsetFi.Unlock()
 	if err != nil {
 		log.Println("write file error:", err, " topic:", topic)
