@@ -36,7 +36,7 @@ func fileOffset(topic string, partition int32, offset int64, groupId string) {
 
 	//file
 	offsetFi.Lock()
-
+	offsetFi.file.Seek(0, 0)
 	content, _ := ioutil.ReadAll(offsetFi.file)
 	var cfgEntity = cfgObj{}
 	err := json.Unmarshal(content, &cfgEntity)
