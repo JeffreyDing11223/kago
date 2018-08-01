@@ -14,6 +14,7 @@ type Config struct {
 }
 
 func NewConfig() (conf *Config) {
+	conf = new(Config)
 	conf.Config.Config = *sarama.NewConfig()
 	conf.SyncProducerAmount = 1
 	conf.AsyncProducerAmount = 1
