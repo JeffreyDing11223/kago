@@ -39,7 +39,7 @@ func fileOffset(topic string, partition int32, offset int64, groupId string) {
 
 	offsetFi.file.Seek(0, 0)
 	content, _ := ioutil.ReadAll(offsetFi.file)
-	var cfgEntity cfgObj
+	var cfgEntity = cfgObj{}
 	err := json.Unmarshal(content, &cfgEntity)
 	if err != nil {
 		log.Println("cfg json.Unmarshal error", err.Error())
