@@ -40,7 +40,7 @@ func fileOffset(topic string, partition int32, offset int64, groupId string) {
 	if err != nil {
 		log.Println(err)
 	}
-	size := stat.Size() - 1
+	size := stat.Size()
 
 	content := make([]byte, size)
 	offsetFi.file.Read(content)
