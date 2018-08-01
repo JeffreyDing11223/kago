@@ -57,6 +57,7 @@ func fileOffset(topic string, partition int32, offset int64, groupId string) {
 		cfgEntity.Data = append(cfgEntity.Data, offsetEntity)
 	}
 	content, _ = json.Marshal(cfgEntity)
+	err = offsetFi.file.Truncate(0)
 	_, err = offsetFi.file.Write(content)
 	offsetFi.Unlock()
 	if err != nil {
