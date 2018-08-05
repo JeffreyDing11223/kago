@@ -112,10 +112,11 @@ func getFileOffset(topic, groupId string, partition int32) int64 {
 	}
 	//file
 	offsetFi.Lock()
+	offsetFi.file.Seek(0, 0)
 	content, _ = ioutil.ReadAll(offsetFi.file)
 	offsetFi.Unlock()
-	var cfgEntity cfgObj
-	err := json.Unmarshal(content, cfgEntity)
+	var cfgEntity = cfgObj{}
+	err := json.Unmarshal(content, &cfgEntity)
 	if err != nil {
 		log.Println("cfg json.Unmarshal error", err.Error())
 	}
