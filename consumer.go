@@ -145,7 +145,7 @@ func InitPartitionConsumer(addr []string, topic string, partition int32, groupId
 			log.Println("partitionOffsetManager create error")
 			return nil, err
 		}
-		defer partitionOffsetManager.Close()
+		defer partitionOffsetManager.AsyncClose()
 		serverOffset, _ := partitionOffsetManager.NextOffset()
 
 		//file
