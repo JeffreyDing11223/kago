@@ -108,7 +108,7 @@ func getFileOffset(topic, groupId string, partition int32) int64 {
 	var content []byte
 	offsetFi, exist := getTopicFile(topic)
 	if exist == false {
-		return 0
+		return -2
 	}
 	//file
 	offsetFi.Lock()
@@ -125,7 +125,7 @@ func getFileOffset(topic, groupId string, partition int32) int64 {
 			return value.Offset
 		}
 	}
-	return 0
+	return -2
 }
 
 //get file from map

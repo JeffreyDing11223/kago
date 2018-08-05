@@ -147,15 +147,19 @@ func InitPartitionConsumer(addr []string, topic string, partition int32, groupId
 		}
 		defer partitionOffsetManager.AsyncClose()
 		serverOffset, _ := partitionOffsetManager.NextOffset()
+		serverOffset += 1
 
 		//file
-		localOffset := getFileOffset(topic, groupId, partition)
+		localOffset := getFileOffset(topic, groupId, partition) + 1
 
 		var nextOffset int64
 		if conf.OffsetLocalOrServer == 0 {
 			nextOffset = localOffset
 		} else if conf.OffsetLocalOrServer == 2 {
 			nextOffset = Max(serverOffset, localOffset)
+		}
+		if nextOffset < 0 {
+			nextOffset = sarama.OffsetOldest
 		}
 
 		partitionConsumer, err := c.ConsumePartition(topic, partition, nextOffset)
