@@ -12,6 +12,7 @@ type SyncProducer struct {
 	ProducerGroupId string
 }
 
+// one syncProducer without retry
 func InitManualRetrySyncProducer(addr []string, conf *Config) (*SyncProducer, error) {
 	conf.Config.Producer.Retry.Max = 0
 	syncProducer := &SyncProducer{
@@ -27,6 +28,7 @@ func InitManualRetrySyncProducer(addr []string, conf *Config) (*SyncProducer, er
 	return syncProducer, nil
 }
 
+//some(config.SyncProducerAmount) syncProducer without retry
 func InitManualRetrySyncProducerGroup(addr []string, conf *Config, groupId string) ([]*SyncProducer, error) {
 	conf.Config.Producer.Retry.Max = 0
 	producerAmount := conf.SyncProducerAmount

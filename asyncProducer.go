@@ -11,6 +11,7 @@ type AsyncProducer struct {
 	ProducerGroupId string
 }
 
+// one asyncProducer without retry
 func InitManualRetryAsyncProducer(addr []string, conf *Config) (*AsyncProducer, error) {
 	conf.Config.Producer.Retry.Max = 0
 	aSyncProducer := &AsyncProducer{
@@ -26,6 +27,7 @@ func InitManualRetryAsyncProducer(addr []string, conf *Config) (*AsyncProducer, 
 	return aSyncProducer, nil
 }
 
+// some(config.AsyncProducerAmount) asyncProducer without retry
 func InitManualRetryAsyncProducerGroup(addr []string, conf *Config, groupId string) ([]*AsyncProducer, error) {
 	conf.Config.Producer.Retry.Max = 0
 	producerAmount := conf.AsyncProducerAmount
@@ -51,6 +53,7 @@ func InitManualRetryAsyncProducerGroup(addr []string, conf *Config, groupId stri
 	return producerSli, err2
 }
 
+//send message
 func (asp *AsyncProducer) Send() chan<- *ProducerMessage {
 	return asp.producer.Input()
 }
